@@ -5,8 +5,8 @@ var url = require('url')
 var Logix360GeoTools = {
 
 	requestLACGoogle: function(mcc, mnc, lac, cellId, callback) {
-		lac = parseInt(lac,16)
-		cellId = parseInt(cellId,16)
+		lac = parseInt(lac, 16)
+		cellId = parseInt(cellId, 16)
 
 		var options, req, request
 		options = {
@@ -26,13 +26,12 @@ var Logix360GeoTools = {
 
 			return res.on('end', function() {
 				var err
-				console.log(response.length)
 
 				try {
 					if (response.length < 30) {
-						return callback(new Error(E_NOTFOUND), null)
+						return callback(new Error('E_NOTFOUND'))
 					} else {
-						return callback({
+						return callback(null, {
 							provider: 'Google',
 							lat: (~~parseInt(response.slice(14, 22), 16)) / 1000000,
 							lng: (~~parseInt(response.slice(22, 30), 16)) / 1000000
@@ -40,7 +39,7 @@ var Logix360GeoTools = {
 					}
 				} catch(_error) {
 					err = _error
-					return callback(new Error(E_REQERROR), null)
+					return callback(new Error('E_REQERROR'))
 				}
 			})
 		})
@@ -52,7 +51,7 @@ var Logix360GeoTools = {
 		request += ('00000000' + Number(mcc).toString(16)).substr(-8)
 		request += 'ffffffff00000000'
 		req.on('error', function(err) {
-			return callback(new Error(E_REQERROR), null)
+			return callback(new Error(E_REQERROR))
 		})
 		return req.end(new Buffer(request, 'hex'))
 	},
@@ -60,7 +59,7 @@ var Logix360GeoTools = {
 
 	requestLACOpenCellId: function(myOptions, mcc, mnc, lac, cellId, callback) {
 		if (myOptions.openCellIdAPIKey) {
-			var query = '?key=' + myOptions.openCellIdAPIKey + '&mcc=' + mcc + '&mnc=' + mnc + '&cellid=' + parseInt(cellId,16) + '&lac=' + parseInt(lac,16) + '&format=json',
+			var query = '?key=' + myOptions.openCellIdAPIKey + '&mcc=' + mcc + '&mnc=' + mnc + '&cellid=' + parseInt(cellId, 16) + '&lac=' + parseInt(lac, 16) + '&format=json',
 			options = {
 				host : 'opencellid.org',
 				path: '/cell/get' + query
@@ -83,7 +82,7 @@ var Logix360GeoTools = {
 					}
 					var location = Logix360GeoTools.parseLACOpenCellId(body)
 					if (callback) {
-						callback(location)
+						callback(null, location)
 					} else {
 						return location
 					}
@@ -119,7 +118,7 @@ var Logix360GeoTools = {
 		if (myOptions.probability) {
 			 probability = myOptions.probability
 		} else {
-			probability = [10,2,1,1,1,1]
+			probability = [10, 2, 1, 1, 1, 1]
 		}
 		if (myOptions.providers) {
 			providers = myOptions.providers
