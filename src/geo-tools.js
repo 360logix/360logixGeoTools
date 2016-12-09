@@ -69,22 +69,28 @@ var Logix360GeoTools = {
 				var results = ''
 				res.on('error', function(e) {
 					console.log('Got error: ' + e.message)
+					if (callback) callback(e)
 				})
 
 				res.on('data', function(data) {
 					results += data
 				})
 				res.on('end', function() {
-					var body = JSON.parse(results)
-					if (body.error_message) {
-						console.log(body.error_message)
-						return
-					}
-					var location = Logix360GeoTools.parseLACOpenCellId(body)
-					if (callback) {
-						callback(null, location)
-					} else {
-						return location
+					try {
+						var body = JSON.parse(results)
+						if (body.error_message) {
+							console.log(body.error_message)
+							if (callback) callback(new Error(body.error_message))
+							return
+						}
+						var location = Logix360GeoTools.parseLACOpenCellId(body)
+						if (callback) {
+							callback(null, location)
+						} else {
+							return location
+						}
+					} catch(err) {
+						if (callback) callback(err)
 					}
 				})
 			})
